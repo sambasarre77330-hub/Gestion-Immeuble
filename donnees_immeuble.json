@@ -1,0 +1,185 @@
+{
+    "tresorerie_depart": 0,
+    "cautions": [
+        {
+            "Lot": "Appt 7",
+            "Locataire": "Dame",
+            "Montant": 150000,
+            "Date": "12/09/2026"
+        }
+    ],
+    "historique_mois": {
+        "09-2026": {
+            "loyers": [
+                {
+                    "Lot": "Magasin 1",
+                    "Locataire": "MOUBARAK",
+                    "Prévu": 350000,
+                    "Versé": 350000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Magasin 2",
+                    "Locataire": "KARA",
+                    "Prévu": 140000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 3",
+                    "Locataire": "ESSOTINA",
+                    "Prévu": 150000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 4 (Ch.1)",
+                    "Locataire": "DJAMBALA",
+                    "Prévu": 100000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 4 (Ch.2)",
+                    "Locataire": "ANISSA",
+                    "Prévu": 100000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 5 (Ch.1)",
+                    "Locataire": "KINDO",
+                    "Prévu": 100000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 5 (Ch.2)",
+                    "Locataire": "APONIKPE",
+                    "Prévu": 90000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 5 (Ch.3)",
+                    "Locataire": "JOSIAS",
+                    "Prévu": 80000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 6",
+                    "Locataire": "KAMONA",
+                    "Prévu": 200000,
+                    "Versé": 200000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 7",
+                    "Locataire": "(Nom non renseigné)",
+                    "Prévu": 150000,
+                    "Versé": 150000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 8 (Ch.1)",
+                    "Locataire": "AIDARA",
+                    "Prévu": 110000,
+                    "Versé": 110000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 8 (Ch.2)",
+                    "Locataire": "ANDREE",
+                    "Prévu": 90000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 9",
+                    "Locataire": "ISSAKHA",
+                    "Prévu": 200000,
+                    "Versé": 200000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 10",
+                    "Locataire": "AKAMBI",
+                    "Prévu": 150000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 11 (Ch.1)",
+                    "Locataire": "ANTHONY",
+                    "Prévu": 100000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 11 (Ch.2)",
+                    "Locataire": "MAMANE ABDOU",
+                    "Prévu": 100000,
+                    "Versé": 100000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 12 (Ch.1)",
+                    "Locataire": "NORBERT",
+                    "Prévu": 85000,
+                    "Versé": 85000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 12 (Ch.2)",
+                    "Locataire": "MALANDA MOSSIBA",
+                    "Prévu": 90000,
+                    "Versé": 90000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 12 (Ch.3)",
+                    "Locataire": "NZIAOU",
+                    "Prévu": 80000,
+                    "Versé": 0,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 13",
+                    "Locataire": "DIBANGOU",
+                    "Prévu": 150000,
+                    "Versé": 150000,
+                    "Mode": "Espèces"
+                },
+                {
+                    "Lot": "Appt 14",
+                    "Locataire": "BA",
+                    "Prévu": 150000,
+                    "Versé": 150000,
+                    "Mode": "Espèces"
+                }
+            ],
+            "charges": [
+                {
+                    "Categorie": "Maintenance & Travaux (Plomberie, Vidange...)",
+                    "Motif": "Charpente (Objet)",
+                    "Montant": 48000,
+                    "Date": "13/09/2026"
+                },
+                {
+                    "Categorie": "Charges fixes (Gardiennage, Nettoyage)",
+                    "Motif": "Main d'oeuvre charpente",
+                    "Montant": 60000,
+                    "Date": "13/09/2026"
+                },
+                {
+                    "Categorie": "Autres imprévus",
+                    "Motif": "La difference de 199k",
+                    "Montant": 199000,
+                    "Date": "13/09/2026"
+                }
+            ],
+            "extras": []
+        }
+    }
+}

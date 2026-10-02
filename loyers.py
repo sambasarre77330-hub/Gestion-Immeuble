@@ -646,7 +646,7 @@ with st.expander("💳 Ventilation des encaissements par canal (Mois en cours)")
   else:
     st.write("Aucun versement enregistré pour ce mois.")
 
-# ----------------- SECTION CHARGES & EXTRAS -----------------
+# ----------------- SECTION CHARGES & EXTRAS (AVEC SUPPRESSION INDIVIDUELLE) -----------------
 st.markdown("---")
 col_g, col_d = st.columns(2)
 
@@ -669,13 +669,23 @@ with col_g:
       st.rerun()
 
   if mois_data["charges"]:
-    for ch in mois_data["charges"]:
-      st.write(
+    st.markdown("##### Dépenses enregistrées :")
+    idx_charge_suppr = None
+    for idx, ch in enumerate(mois_data["charges"]):
+      c_txt, c_del = st.columns([5, 1])
+      c_txt.write(
           f"• **[{ch.get('Categorie', 'Autres')}]** {ch['Motif']} :"
           f" -{safe_int(ch.get('Montant')):,} FCFA".replace(",", " ")
       )
-    if st.button("Effacer les charges de ce mois"):
-      mois_data["charges"] = []
+      if c_del.button(
+          "🗑️",
+          key=f"del_c_{mois_choisi}_{idx}",
+          help="Supprimer cette dépense",
+      ):
+        idx_charge_suppr = idx
+
+    if idx_charge_suppr is not None:
+      mois_data["charges"].pop(idx_charge_suppr)
       sauvegarder_donnees(donnees)
       st.rerun()
 
@@ -696,14 +706,22 @@ with col_d:
       st.rerun()
 
   if mois_data["extras"]:
-    for ex in mois_data["extras"]:
-      st.write(
+    st.markdown("##### Extras enregistrés :")
+    idx_extra_suppr = None
+    for idx, ex in enumerate(mois_data["extras"]):
+      e_txt, e_del = st.columns([5, 1])
+      e_txt.write(
           f"• **{ex['Motif']}** : +{safe_int(ex.get('Montant')):,} FCFA".replace(
               ",", " "
           )
       )
-    if st.button("Effacer les extras de ce mois"):
-      mois_data["extras"] = []
+      if e_del.button(
+          "🗑️", key=f"del_e_{mois_choisi}_{idx}", help="Supprimer cet extra"
+      ):
+        idx_extra_suppr = idx
+
+    if idx_extra_suppr is not None:
+      mois_data["extras"].pop(idx_extra_suppr)
       sauvegarder_donnees(donnees)
       st.rerun()
 

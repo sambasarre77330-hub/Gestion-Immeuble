@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from pathlib import Path
 import pandas as pd
+import requests
 import streamlit as st
 
 st.set_page_config(
@@ -198,25 +199,11 @@ DATA_DEFAUT_SEPTEMBRE = [
 ]
 
 
-def charger_donnees():
-  if not FICHIER_DATA.exists():
-    initial = {
-        "tresorerie_depart": 0,
-        "cautions": [],
-        "historique_mois": {
-            "09-2026": {
-                "loyers": DATA_DEFAUT_SEPTEMBRE,
-                "charges": [],
-                "extras": [],
-            }
-        },
-    }
-    sauvegarder_donnees(initial, creer_backup=False)
-    return initial
-
-  with open(FICHIER_DATA, "r", encoding="utf-8") as f:
-    data = json.load(f)
-
+def valider_et_nettoyer(data):
+  if not isinstance(data, dict):
+    data = {}
+  if "tresorerie_depart" not in data:
+    data["tresorerie_depart"] = 0
   if "cautions" not in data or not isinstance(data["cautions"], list):
     data["cautions"] = []
 
@@ -232,20 +219,25 @@ def charger_donnees():
       })
   data["cautions"] = cautions_propres
 
-  if "historique_mois" not in data:
-    data = {
-        "tresorerie_depart": 0,
-        "cautions": data.get("cautions", []),
-        "historique_mois": {
-            "09-2026": {
-                "loyers": data.get("loyers", DATA_DEFAUT_SEPTEMBRE),
-                "charges": data.get("charges", []),
-                "extras": data.get("extras", []),
-            }
-        },
+  if "historique_mois" not in data or not isinstance(
+      data["historique_mois"], dict
+  ):
+    data["historique_mois"] = {
+        "09-2026": {
+            "loyers": DATA_DEFAUT_SEPTEMBRE,
+            "charges": [],
+            "extras": [],
+        }
     }
 
   for m_k, m_v in data["historique_mois"].items():
+    if "loyers" not in m_v:
+      m_v["loyers"] = []
+    if "charges" not in m_v:
+      m_v["charges"] = []
+    if "extras" not in m_v:
+      m_v["extras"] = []
+
     for row in m_v.get("loyers", []):
       if "Mode" not in row or row["Mode"] not in MODES_PAIEMENT:
         row["Mode"] = "Espèces"
@@ -255,23 +247,85 @@ def charger_donnees():
   return data
 
 
-def sauvegarder_donnees(data, creer_backup=True):
+def charger_donnees():
+  gist_id = st.secrets.get("GIST_ID") if "GIST_ID" in st.secrets else None
+  token = (
+      st.secrets.get("GITHUB_TOKEN") if "GITHUB_TOKEN" in st.secrets else None
+  )
+
+  if gist_id and token:
+    try:
+      headers = {
+          "Authorization": f"token {token}",
+          "Accept": "application/vnd.github.v3+json",
+      }
+      resp = requests.get(
+          f"https://api.github.com/gists/{gist_id}", headers=headers, timeout=6
+      )
+      if resp.status_code == 200:
+        files = resp.json().get("files", {})
+        if "donnees_immeuble.json" in files:
+          contenu_raw = files["donnees_immeuble.json"].get("content", "{}")
+          data = json.loads(contenu_raw)
+          return valider_et_nettoyer(data), True
+    except Exception:
+      pass
+
+  if FICHIER_DATA.exists():
+    try:
+      with open(FICHIER_DATA, "r", encoding="utf-8") as f:
+        data = json.load(f)
+      return valider_et_nettoyer(data), False
+    except Exception:
+      pass
+
+  initial = {
+      "tresorerie_depart": 0,
+      "cautions": [],
+      "historique_mois": {
+          "09-2026": {
+              "loyers": DATA_DEFAUT_SEPTEMBRE,
+              "charges": [],
+              "extras": [],
+          }
+      },
+  }
+  return valider_et_nettoyer(initial), False
+
+
+def sauvegarder_donnees(data):
   with open(FICHIER_DATA, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=4, ensure_ascii=False)
 
-  if creer_backup:
-    horodatage = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fichier_backup = DOSSIER_BACKUPS / f"sauvegarde_{horodatage}.json"
-    with open(fichier_backup, "w", encoding="utf-8") as f:
-      json.dump(data, f, indent=4, ensure_ascii=False)
+  gist_id = st.secrets.get("GIST_ID") if "GIST_ID" in st.secrets else None
+  token = (
+      st.secrets.get("GITHUB_TOKEN") if "GITHUB_TOKEN" in st.secrets else None
+  )
 
-    fichiers = sorted(DOSSIER_BACKUPS.glob("sauvegarde_*.json"))
-    if len(fichiers) > 25:
-      for f_old in fichiers[:-25]:
-        f_old.unlink()
+  if gist_id and token:
+    try:
+      headers = {
+          "Authorization": f"token {token}",
+          "Accept": "application/vnd.github.v3+json",
+      }
+      payload = {
+          "files": {
+              "donnees_immeuble.json": {
+                  "content": json.dumps(data, indent=4, ensure_ascii=False)
+              }
+          }
+      }
+      requests.patch(
+          f"https://api.github.com/gists/{gist_id}",
+          json=payload,
+          headers=headers,
+          timeout=6,
+      )
+    except Exception as e:
+      st.sidebar.warning(f"⚠️ Alerte synchro Cloud : {e}")
 
 
-donnees = charger_donnees()
+donnees, cloud_connecte = charger_donnees()
 
 liste_mois = sorted(
     donnees["historique_mois"].keys(),
@@ -280,6 +334,11 @@ liste_mois = sorted(
 
 # ----------------- BARRE LATÉRALE -----------------
 st.sidebar.title("🏢 Navigation")
+
+if cloud_connecte:
+  st.sidebar.success("🟢 Cloud synchronisé en direct")
+else:
+  st.sidebar.info("🟠 Mode local / Non synchronisé au Cloud")
 
 mois_choisi = st.sidebar.selectbox(
     "Mois de travail :", options=liste_mois, index=len(liste_mois) - 1
@@ -319,12 +378,29 @@ with st.sidebar.form("form_nouveau_mois"):
       st.sidebar.error("Format invalide. Utilisez MM-AAAA.")
 
 st.sidebar.markdown("---")
-backups_existants = sorted(
-    DOSSIER_BACKUPS.glob("sauvegarde_*.json"), reverse=True
+st.sidebar.subheader("💾 Sécurité & Restauration")
+json_data_bytes = json.dumps(donnees, indent=4, ensure_ascii=False).encode(
+    "utf-8"
 )
-st.sidebar.caption(
-    f"🛡️ {len(backups_existants)} sauvegardes automatiques conservées."
+st.sidebar.download_button(
+    label="📥 Sauvegarder la base (.json)",
+    data=json_data_bytes,
+    file_name=f"sauvegarde_immeuble_{datetime.now().strftime('%Y%m%d')}.json",
+    mime="application/json",
 )
+
+fichier_restaure = st.sidebar.file_uploader(
+    "Restaurer un fichier .json :", type=["json"]
+)
+if fichier_restaure is not None:
+  try:
+    donnees_chargees = json.load(fichier_restaure)
+    donnees = valider_et_nettoyer(donnees_chargees)
+    sauvegarder_donnees(donnees)
+    st.sidebar.success("Données restaurées avec succès !")
+    st.rerun()
+  except Exception as e:
+    st.sidebar.error("Fichier de sauvegarde invalide.")
 
 # ----------------- CALCUL DE TRÉSORERIE MULTI-MOIS -----------------
 solde_reporte = safe_int(donnees.get("tresorerie_depart", 0))
@@ -403,7 +479,7 @@ if not df_edite[cols_sauve].equals(df_base[cols_sauve]):
   sauvegarder_donnees(donnees)
   st.rerun()
 
-# ----------------- CALCULS FINANCIERS & JAUGE RECOUVREMENT -----------------
+# ----------------- CALCULS FINANCIERS & PROGRESSION -----------------
 total_attendu = int(df_edite["Prévu"].sum())
 total_loyers = int(df_edite["Versé"].sum())
 total_impayes = int(df_edite["Reste Dû"].sum())
@@ -448,7 +524,7 @@ with zone_indicateurs:
   )
   st.progress(min(max(taux_recouvrement, 0.0), 1.0))
 
-# ----------------- SYNTHÈSE PRODUITS VS CHARGES (COMPTE DE RÉSULTAT) -----------------
+# ----------------- SYNTHÈSE PRODUITS VS CHARGES -----------------
 with st.expander(
     "📊 Synthèse Produits vs Charges (Résultat Net d'Exploitation)",
     expanded=True,
